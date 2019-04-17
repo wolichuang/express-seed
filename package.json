@@ -15,7 +15,7 @@
     "express-session": "^1.15.6",
     "file-stream-rotator": "^0.2.0",
     "mockjs": "^1.0.1-beta3",
-    "morgan": "~1.7.0",
+    "morgan": ">=1.9.1",
     "multer": "^1.2.0",
     "mysql": "^2.15.0",
     "mysql2": "^1.5.1",
