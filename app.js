@@ -3,6 +3,7 @@ var session = require('express-session'); // session配置
 var path = require('path');
 var favicon = require('serve-favicon');
 var ejs = require('ejs'); // 模板配置
+var expressLayouts = require('express-ejs-layouts');
 var logger = require('morgan'); // 记录访问日志
 var cookieParser = require('cookie-parser'); // cookie配置
 var bodyParser = require('body-parser'); // 表单转化
@@ -17,6 +18,7 @@ app.set('views', path.join(__dirname, 'views'));
 // 设置模板
 app.engine('.html',ejs.__express); 
 app.set('view engine', 'html');
+app.use(expressLayouts);
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
 app.use(bodyParser.json());

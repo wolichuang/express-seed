@@ -13,7 +13,7 @@ router.get('/', function(req, res, next) {
 	  { name: 'loki', email: 'loki@learnboost.com' },
 	  { name: 'jane', email: 'jane@learnboost.com' }
   ];
-  res.render('index', { title: 'Express', cookies:'Admin',users:users,session: sessionCount});
+  res.render('index', { title: 'Express', cookies:'Admin',users:users,session: sessionCount,layout:"layout-default"});
 });
 
 // json
@@ -87,7 +87,7 @@ router.post("/doAjax", function(req, res, next) {
 /* 头像上传处理 */
 var upload = multer(globals.avatar);
 router.get('/upload', function(req, res, next) {
-  res.render('file',{ title:"头像上传"});
+  res.render('file',{ title:"头像上传",layout:"layout-default"});
 });
 router.post('/doUpload',upload.array('image'),function(req, res, next) {
     console.log(req.files[0]);  // 上传的文件信息
@@ -118,7 +118,7 @@ router.get('/login', function(req, res, next) {
     if(req.session.isLogin){
         res.locals.isLogin = req.session.isLogin;
     }
-    res.render('login', { title: '登录' });
+    res.render('login', { title: '登录',layout:"layout-default" });
 });
 router.get('/loginAction', function(req, res, next) {
     loginDao.login(req, res, next);

@@ -88,6 +88,38 @@ app.set('view engine', 'html');
 
 <%} else {%><%}%>
 ```
+### 使用 express-ejs-layouts 模板
+
+1. 使用 api https://www.npmjs.com/package/express-ejs-layouts
+
+```
+var expressLayouts = require('express-ejs-layouts');
+app.use(expressLayouts);
+
+// 创建 layout 模板
+<!DOCTYPE html>
+<html>
+<head>
+    <title><%= title %></title>
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <% include ./commons/header.html %>
+</head>
+<body>
+<div class="wrapper">
+    <div id="page-wrapper">
+        <%- body %>
+    </div>
+</div>
+<% include ./commons/footer.html %>
+</body>
+</html>
+
+// 路由指定模板
+res.render('file',{ title:"头像上传",layout:"layout-default"});
+```
 
 ## 定义路由
 

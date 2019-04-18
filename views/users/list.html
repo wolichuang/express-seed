@@ -1,49 +1,33 @@
-<%include ../commons/header.html%>
-<%include ../commons/nav.html%>
-<!-- 模板内容开始 -->
-<div class="container-fluid">
-    <div class="row-fluid">
-        <!-- 左侧导航开始 -->
-        <%include ../commons/sidebar.html%>
-        <!-- 左侧导航结束 -->
-        <!-- 右侧内容开始 -->
-        <div class="span10">
-                <h1 class="page-title"></h1>
-                <div class="btn-toolbar">
-                    <a href="/users/addUser" class="btn btn-primary"><i class="icon-plus"></i>新增用户</a>
-                    <div class="btn-group">
-                    </div>
-                </div>
-                <div class="well">
-                    <table class="table">
-                        <thead>
-                        <tr>
-                            <th>用户ID</th>
-                            <th>用户名</th>
-                            <th>口令</th>
-                            <th>真实姓名</th>
-                            <th>操作</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <% for(var i=0; i < users.length; i++)  {%>
-                            <tr>
-                                <td><%=users[i].id%></td>
-                                <td><%=users[i].username%></td>
-                                <td><%=users[i].password%></td>
-                                <td><%=users[i].realname%></td>
-                                <td>
-                                    <a href="/users/queryById/<%=users[i].id%>" class="btn btn-primary">修改</a>
-                                    <a href="/users/deleteById/<%=users[i].id%>" class="btn">删除</a>
-                                </td>
-                            </tr>
-                        <% } %>
-                        </tbody>
-                    </table>
-                </div>
-        </div>
-        <!-- 右侧内容结束 -->
+<h1 class="page-title"></h1>
+<div class="btn-toolbar">
+    <a href="/users/addUser" class="btn btn-primary"><i class="icon-plus"></i>新增用户</a>
+    <div class="btn-group">
     </div>
 </div>
-<!-- 模板内容结束 -->
-<%include ../commons/footer.html%>
+<div class="well">
+    <table class="table">
+        <thead>
+        <tr>
+            <th>用户ID</th>
+            <th>用户名</th>
+            <th>口令</th>
+            <th>真实姓名</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        <% for(var i=0; i < users.length; i++)  {%>
+            <tr>
+                <td><%=users[i].id%></td>
+                <td><%=users[i].username%></td>
+                <td><%=users[i].password%></td>
+                <td><%=users[i].realname%></td>
+                <td>
+                    <a href="/users/queryById/<%=users[i].id%>" class="btn btn-primary">修改</a>
+                    <a href="/users/deleteById/<%=users[i].id%>" class="btn">删除</a>
+                </td>
+            </tr>
+        <% } %>
+        </tbody>
+    </table>
+</div>
