@@ -1,38 +1,43 @@
 var express = require('express');
-var session = require('express-session'); // session配置
+var session = require('express-session'); // session
 var path = require('path');
 var favicon = require('serve-favicon');
-var ejs = require('ejs'); // 模板配置
-var expressLayouts = require('express-ejs-layouts');
 var logger = require('morgan'); // 记录访问日志
-var cookieParser = require('cookie-parser'); // cookie配置
-var bodyParser = require('body-parser'); // 表单转化
-var serverConfig = require('./config/server'); // 配置文件
-// 路由
+var cookieParser = require('cookie-parser'); // cookie
+var bodyParser = require('body-parser');
+var multer  = require('multer');// 上传文件
 var index = require('./routes/index');
+
+// 声明routes
 var users = require('./routes/users');
 
 var app = express();
 
+// 上传文件
+app.use(multer({ 
+  dest: './avatar/',
+  rename: function (fieldname, filename) {
+    return filename.replace(/\W+/g, '-').toLowerCase() + Date.now()
+  }
+}));
+
+// view engine setup
 app.set('views', path.join(__dirname, 'views'));
-// 设置模板
-app.engine('.html',ejs.__express); 
-app.set('view engine', 'html');
-app.use(expressLayouts);
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+// 模板引擎
+app.engine('.html',require('ejs').__express);
+app.set('view engine', 'html'); // ejs模板
+
+// app.set('view engine', 'jade');
+
+// uncomment after placing your favicon in /public
+app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser('this is key')); // 设置cookies
-// 设置session
-app.use(session({
-  "resave": serverConfig.session.resave,
-  "saveUninitialized": serverConfig.session.saveUninitialized,
-  "secret": serverConfig.session.secret, // 建议使用 128 个字符的随机字符串
-  "cookie": serverConfig.session.cookie
-}));
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-// 定义日志
+
+// 输出日志到目录
 var fs = require('fs');
 var fileStreamRotator = require('file-stream-rotator');
 var logDir = path.join(__dirname, 'logs');
@@ -64,10 +69,7 @@ app.use(function(err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.render('error',{title:'错误页面'});
+  res.render('error');
 });
-
-
-app.locals.globals = require('./config/globals'); // 设置全局静态变量库
 
 module.exports = app;
