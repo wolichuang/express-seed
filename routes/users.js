@@ -1,55 +1,38 @@
 var express = require('express');
 var router = express.Router();
-var usersDao = require('../model/usersDao');
-var usersMock = require('../mock/usersMock');
-var title = "用户管理";
-/* 获取全部数据 */
+
+var userDao = require('../dao/userDao');
+
+/* GET users listing. */
 router.get('/', function(req, res, next) {
-  usersDao.queryAll(req, res, function(data){
-      res.render('users/list', {
-          title:title,
-          users: data
-      });
-  });
+  //res.send('respond with a resource');
+    res.render('updateUser');
 });
 
+
+// 增加用户
+//TODO 同时支持get,post
 router.get('/addUser', function(req, res, next) {
-   var user = usersMock.newUser()['one']; //  取假数据
-   res.render('users/one',{title:title,user:user,page:'addUser'});
+    userDao.add(req, res, next);
 });
 
-router.post('/addUser',function(req, res, next) {  
-  usersDao.add(req, res, function(data){
-    if(data.code == 200){
-        res.redirect('/users');
-    }
-  });
-})
 
-router.get('/queryById/:id', function(req, res, next) {
-  usersDao.queryById(req, res, function(data){
-    res.render('users/one', {
-        title:title,
-        user: data,
-        page:''
-    });
-  });
+router.get('/queryAll', function(req, res, next) {
+    console.log('查询所有user');
+    userDao.queryAll(req, res, next);
 });
 
-router.post('/updateUser',function(req, res, next) {
-  usersDao.update(req, res, function(data){
-    if(data.code == 200){
-        res.redirect('/users');
-    }
-  });
+router.get('/query', function(req, res, next) {
+    userDao.queryById(req, res, next);
 });
 
-router.get('/deleteById/:id', function(req, res, next) {
-  usersDao.delete(req, res, function(data){
-    if(data.code == 200){
-        res.redirect('/users');
-    }
-  });
+router.get('/deleteUser', function(req, res, next) {
+    userDao.delete(req, res, next);
+});
+
+router.post('/updateUser', function(req, res, next) {
+    userDao.update(req, res, next);
 });
 
 module.exports = router;
+
