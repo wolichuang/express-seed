@@ -2,28 +2,35 @@
 
 nodejs的前端框架 主要构成 模板解析 路由控制 用户会话 CSRF保护 静态文件服务 错误控制器 日志处理 缓存。
 
-##  模块
+## 是什么
 
-1. 全局变量配置
-2. 初始化 模板引擎
-3. 初始化 mysql 模块 
-4. 初始化 日志 模块
-5. 初始化 cookie 模块
-6. 初始化 session 模块
-7. 定义路由
-9.  功能-用户增删改查模块
-10. 功能-文件上传模块
-11. 功能-mock模块
+express4.x 开发常用功能备忘录
 
-## 安装
+## 功能点
 
-```javascript
-npm install express -gd         #依赖全局安装express
-npm install express-generator   #安装辅助工具 添加到命令行
-express -e express4.0-starter     #初始化express项目
+1. 初始化项目
+2. 初始化 全局变量配置
+3. 初始化 模板引擎
+4. 初始化 路由
+5. 初始化 mysql 模块 
+6. 初始化 日志 模块
+7. 初始化 cookie 模块
+8. 初始化 session 模块
+9. 功能-文件上传 模块
+10. 功能-mock 模块
+11. 案例-用户增删改查
+
+## 初始化项目
+
+
+```js
+npm install express -gd           # 依赖全局安装express
+npm install express-generator     # 安装辅助工具 添加到命令行
+express -e express4.0-starter     # 初始化express项目
 cd express4.0-starter
-yarn # 安装 
-npm start # 启动
+
+yarn                              # 安装 
+npm start                         # 启动
 
 # 开发环境配置-自动启动
 npm install node-dev
@@ -37,10 +44,14 @@ npm install -g supervisor
 }
 ```
 
-## 全局变量配置
+## 初始化 全局变量配置
+
+在 app.js 中引用
 
 ```javascript
-app.locals.globals = require('./config/globals'); // 设置全局静态变量库
+ // 设置全局静态变量库
+app.locals.globals = require('./config/globals');
+
 // globals.js
 module.exports = {
     avatar:{ 
@@ -53,15 +64,21 @@ module.exports = {
 };
 ```
 
-##  模板引擎
+## 初始化 模板引擎
 
-控制器得到用户请求后，从模型获取数据，调用模板引擎。模板引擎以数据和页面模板为输入，生成 HTML 页面，然后返回给控制器，由控制器交回客户端。
+控制器得到用户请求后，从模型获取数据，调用模板引擎。
 
-```javascript
+模板引擎以数据和页面模板为输入，生成 HTML 页面，然后返回给控制器，由控制器交回客户端。
+
+修改 app.js
+
+```js
 var ejs = require('ejs'); 
 app.engine('.html',ejs.__express);  
 app.set('view engine', 'html');
 ```
+
+### ejs 语法
 
 ```javascript
 // ejs 语法
@@ -88,40 +105,10 @@ app.set('view engine', 'html');
 
 <%} else {%><%}%>
 ```
-### 使用 express-ejs-layouts 模板
 
-1. 使用 api https://www.npmjs.com/package/express-ejs-layouts
+## 初始化 路由
 
-```
-var expressLayouts = require('express-ejs-layouts');
-app.use(expressLayouts);
-
-// 创建 layout 模板
-<!DOCTYPE html>
-<html>
-<head>
-    <title><%= title %></title>
-    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="">
-    <meta name="author" content="">
-    <% include ./commons/header.html %>
-</head>
-<body>
-<div class="wrapper">
-    <div id="page-wrapper">
-        <%- body %>
-    </div>
-</div>
-<% include ./commons/footer.html %>
-</body>
-</html>
-
-// 路由指定模板
-res.render('file',{ title:"头像上传",layout:"layout-default"});
-```
-
-## 定义路由
+分别修改 app.js 和 创建 router/index.js 添加修改内容
 
 ```js
 // app.js
@@ -145,166 +132,7 @@ router.get('/', function(req, res, next) {
 module.exports = router;
 ```
 
-## 初始化 mysql 模块 
-
-```js
-"mysql": "^2.15.0",
-"mysql2": "^1.5.1",
-    
-// utils
-var mysql = require('mysql');
-var $conf = require('../config/server'); // 数据库
-var utils = {
-    // 数据库链接
-    pool: function () {
-        function extend(target, source, flag) {
-            for (var key in source) {
-                if (source.hasOwnProperty(key))
-                    flag ?
-                        (target[key] = source[key]) :
-                        (target[key] === void 0 && (target[key] = source[key]));
-            }
-            return target;
-        }
-        // 使用连接池，提升性能
-        return mysql.createPool(extend({}, $conf.mysql));
-    }
-}
-
-// model 使用
-var $utils = require('../utils'); // 工具类
-var pool = $utils.pool(); // 数据库链接池
-var $sql = require('./usersMapping'); // sql语句
-pool.getConnection(function(err, connection) {
-    connection.query($sql.queryAll, function(err, result) {
-        if(result.length){
-            callback(result);
-        }else{
-            result = void 0;
-        }
-        // jsonWrite(res, result);
-        connection.release();
-    });
-});
-```
-
-
-
-## 初始化日志模块
-
-1. log4j1.x 用于记录项目中出现的错误日志
-2. morgan 用于记录访问日志
-
-```js
-"morgan": "~1.5.1"
-"file-stream-rotator":"~0.0.6"
-"log4js":"~1.0.0"
-
-// app.js
-var logger = require('morgan'); // 记录访问日志
-var fs = require('fs');
-var fileStreamRotator = require('file-stream-rotator');
-var logDir = path.join(__dirname, 'logs');
-fs.existsSync(logDir) || fs.mkdirSync(logDir);
-var accessLogStream = fileStreamRotator.getStream({
-    date_format: 'YYYYMMDD',
-    filename: path.join(logDir, 'access-%DATE%.log'),
-    frequency: 'daily',
-    verbose: true
-});
-app.use(logger('combined', {stream: accessLogStream}));
-
-// router
-var $utils = require('../utils'); // 工具类
-var logger = $util.logger(); // 日志管理
-logger.info("this is log");//输出日志
-```
-
-## 初始化 cookie 模块
-
-```js
-"cookie-parser": "~1.4.3"
-
-// app.js
-var cookieParser = require('cookie-parser'); // cookie配置
-app.use(cookieParser('this is key')); // 设置cookies
-
-// router
-router.get('/cookie',function(req, res, next) {
-    const options = {
-      domain:'127.0.0.1',
-      path:'/',
-      maxAge: 10 * 60 * 1000, // cookie有效时长
-      expires: new Date('2019-02-02'),  // cookie失效时间
-      httpOnly: false,  // 是否只用于http请求中获取
-      overwrite: false  // 是否允许重写
-    }
-    res.cookie('name', 'tobi', options);
-    res.send(req.cookies.name);  // 输出cookie值
-});
-```
-
-## 初始化 session 模块
-
-在 config 中创建 global .js 工具文件,包含全部的配置文件。
-
-```js
-"express-session": "^1.15.6"
-
-// app.js 
-app.use(session({
-  "resave": serverConfig.session.resave,
-  "saveUninitialized": serverConfig.session.saveUninitialized,
-  "secret": serverConfig.session.secret, // 建议使用 128 个字符的随机字符串
-  "cookie": serverConfig.session.cookie
-}));
-
-// router.js
-req.session.count = req.session.count || 0; 
-var sessionCount = req.session.count++;
-```
-
-## 文件上传模块
-
-```js
-"multer": "^1.2.0"
-
-// router.js
-var multer  = require('multer');
-var fs = require("fs");
-var upload = multer({ 
-    dest: './avator/',
-    rename: function (fieldname, filename) {
-        return filename.replace(/\W+/g, '-').toLowerCase() + Date.now()
-    }
-});
-router.post('/doUpload',upload.array('image'),function(req, res, next) {
-    console.log(req.files[0]);  // 上传的文件信息
-    if(undefined == req.files[0]){
-        res.json(['failed', {msg:"没有选择要上传的文件！"}]);
-        return -1;
-    }
-    var des_file = "./avatar/" + req.files[0].originalname;
-    fs.readFile( req.files[0].path, function (err, data) {
-        fs.writeFile(des_file, data, function (err) {
-            if( err ){
-                console.log( err );
-                res.json(['failed', {msg:err}]);
-            }else{
-                response = {
-                    msg:'File uploaded successfully', 
-                    filename:req.files[0].originalname,
-                };
-                res.json(['success', response]);
-            }
-        });
-    });
-});
-```
-
-## 用户增删改查模块
-
-包含文件：mock/usersMock.js 、model/usersDao.js 、model/usersMapping.js 、routes/users.js
+router 中常用的操作说明
 
 1. 一种是利用res.render替换jade（ejs）模板处理view层显示
 2. 一种是利用res.send发送数据请求直接显示到网页。
@@ -330,7 +158,7 @@ res.locals.isLogin = req.session.isLogin;
 res.cookie('name', 'tobi', options);
 // 取值
 req.params.name  // 取值（/user/:name）
-req.query.q // 取值 (?q=tobi+ferret)
+req.query.ctime // 取值 (?q=tobi+ferret)
 req.param('name') // 取值 （?name=tobi 、/user/:name 、?q=tobi+ferret）
 req.body.name // 取值 (post值)
 res.redirect('http:// example. com'); 
@@ -374,9 +202,196 @@ router.post("/doAjax", function(req, res, next) {
 });
 ```
 
-## mock 模块
+## 初始化 mysql 模块 
+
+创建 config/server.js 配置文件、 utils 链接数据库工具文件， 创建 models/user.js 模型查询数据库
+
+链接数据库，如 mysql
+
+```package.json
+"mysql": "^2.15.0",
+"mysql2": "^1.5.1",
+```
 
 ```js
+// utils
+var mysql = require('mysql');
+var $conf = require('../config/server'); // 数据库
+var utils = {
+    // 数据库链接
+    pool: function () {
+        function extend(target, source, flag) {
+            for (var key in source) {
+                if (source.hasOwnProperty(key))
+                    flag ?
+                        (target[key] = source[key]) :
+                        (target[key] === void 0 && (target[key] = source[key]));
+            }
+            return target;
+        }
+        // 使用连接池，提升性能
+        return mysql.createPool(extend({}, $conf.mysql));
+    }
+}
+
+// models/user.js
+var $utils = require('../utils'); // 工具类
+var pool = $utils.pool(); // 数据库链接池
+var $sql = require('./usersMapping'); // sql语句
+pool.getConnection(function(err, connection) {
+    connection.query($sql.queryAll, function(err, result) {
+        if(result.length){
+            callback(result);
+        }else{
+            result = void 0;
+        }
+        // jsonWrite(res, result);
+        connection.release();
+    });
+});
+```
+
+## 初始化 日志 模块
+
+1. log4j1.x 用于记录项目中出现的错误日志
+2. morgan 用于记录访问日志
+
+```package.json
+"morgan": "~1.5.1"
+"file-stream-rotator":"~0.0.6"
+"log4js":"~1.0.0"
+```
+
+修改 app.js
+
+
+```js
+var logger = require('morgan'); // 记录访问日志
+var fs = require('fs');
+var fileStreamRotator = require('file-stream-rotator');
+var logDir = path.join(__dirname, 'logs');
+fs.existsSync(logDir) || fs.mkdirSync(logDir);
+var accessLogStream = fileStreamRotator.getStream({
+    date_format: 'YYYYMMDD',
+    filename: path.join(logDir, 'access-%DATE%.log'),
+    frequency: 'daily',
+    verbose: true
+});
+app.use(logger('combined', {stream: accessLogStream}));
+```
+
+使用 logger
+
+```js
+var $utils = require('../utils'); // 工具类
+var logger = $util.logger(); // 日志管理
+logger.info("this is log");//输出日志
+```
+
+## 初始化 cookie 模块
+
+```package.json
+"cookie-parser": "~1.4.3"
+```
+修改 app.js
+
+```js
+var cookieParser = require('cookie-parser'); // cookie配置
+app.use(cookieParser('this is key')); // 设置cookies
+```
+测试 cookie
+
+```js
+// router
+router.get('/cookie',function(req, res, next) {
+    const options = {
+      domain:'127.0.0.1',
+      path:'/',
+      maxAge: 10 * 60 * 1000, // cookie有效时长
+      expires: new Date('2019-02-02'),  // cookie失效时间
+      httpOnly: false,  // 是否只用于http请求中获取
+      overwrite: false  // 是否允许重写
+    }
+    res.cookie('name', 'tobi', options);
+    res.send(req.cookies.name);  // 输出cookie值
+});
+```
+
+## 初始化 session 模块
+
+```package.json
+"express-session": "^1.15.6"
+```
+
+修改 app.js
+
+```js
+import serverConfig from './config/global.js'
+app.use(session({
+  "resave": serverConfig.session.resave,
+  "saveUninitialized": serverConfig.session.saveUninitialized,
+  "secret": serverConfig.session.secret, // 建议使用 128 个字符的随机字符串
+  "cookie": serverConfig.session.cookie
+}));
+```
+
+测试 session
+
+```js
+req.session.count = req.session.count || 0; 
+var sessionCount = req.session.count++;
+```
+
+## 功能-文件上传 模块
+
+```package.json
+"multer": "^1.2.0"
+```
+
+```js
+// router.js
+var multer  = require('multer');
+var fs = require("fs");
+var upload = multer({ 
+    dest: './avator/',
+    rename: function (fieldname, filename) {
+        return filename.replace(/\W+/g, '-').toLowerCase() + Date.now()
+    }
+});
+router.post('/doUpload',upload.array('image'),function(req, res, next) {
+    console.log(req.files[0]);  // 上传的文件信息
+    if(undefined == req.files[0]){
+        res.json(['failed', {msg:"没有选择要上传的文件！"}]);
+        return -1;
+    }
+    var des_file = "./avatar/" + req.files[0].originalname;
+    fs.readFile( req.files[0].path, function (err, data) {
+        fs.writeFile(des_file, data, function (err) {
+            if( err ){
+                console.log( err );
+                res.json(['failed', {msg:err}]);
+            }else{
+                response = {
+                    msg:'File uploaded successfully', 
+                    filename:req.files[0].originalname,
+                };
+                res.json(['success', response]);
+            }
+        });
+    });
+});
+```
+
+## 功能-mock 模块
+
+```js
+"mockjs": "2.x"
+```
+
+创建 mock/index.js
+
+```js
+
 var Mock = require("mockjs");
 var Random = Mock.Random;
 var data = Mock.mock({
@@ -393,10 +408,15 @@ var data = Mock.mock({
 console.log(JSON.stringify(data, null, 4));
 ```
 
-## 附件
+## 案例：用户增删改查
 
-```js
-// package.json
+包含文件：mock/usersMock.js 、model/usersDao.js 、model/usersMapping.js 、routes/users.js
+
+github: https://github.com/wolichuang/express-seed
+
+## 附件：package.json
+
+```
 {
   "name": "express4.0-learn",
   "version": "0.0.0",
@@ -424,4 +444,5 @@ console.log(JSON.stringify(data, null, 4));
   }
 }
 ```
+
 
